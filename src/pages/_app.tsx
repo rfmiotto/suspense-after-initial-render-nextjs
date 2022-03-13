@@ -30,6 +30,21 @@ that haven't been loaded yet, we fallback to that root suspense boundary, becaus
 that is how Suspense works. Anytime a component fetches data with a Suspense,
 React will render the next Suspense boundaries. Here, we don't want to render
 the Suspense root boundary because it gives us a weird behavior.
+Fortunately, Suspense supports nested boundaries, so we can solve this problem
+by adding another boundary wrapping our `Component`. Now, the Component, which
+in our case is going to be the Message component, is the only component fetching
+data and React will leave the Sidebar render.
+But now look at what happens when we refresh the page when a message is selected:
+we have this sort of waterfall spinner problem whenever we start at an specific
+message. After refreshing the page, we see the main spinner, then the Sidebar is
+rendered and since the message takes longer to load, we see another spinner.
+Here the Sidebar request is finishing first, so React will go ahead and render it,
+but since the Message takes longer to complete its request and it is wrapped under
+another Suspense boundary, we see that loading spinner.
+So we are kind of in a middle of a pickle here: we want the inner Suspense boundary
+to exist so that we keep the sidebar always rendered while the messages are being
+loaded, but if we have a message selected in initial render, we only want one
+spinner. How can we solve this problem?
 */
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -40,7 +55,9 @@ function MyApp({ Component, pageProps }: AppProps) {
           <Sidebar />
 
           <div className="flex w-full bg-zinc-900">
-            <Component {...pageProps} />
+            <Suspense fallback={<Spinner />}>
+              <Component {...pageProps} />
+            </Suspense>
           </div>
 
           <ReactQueryDevtools />
