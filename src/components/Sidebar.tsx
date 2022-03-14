@@ -24,6 +24,7 @@ type MessagesResponse = {
 function MessageLink({ message }: MessageLinkProps) {
   const router = useRouter();
   const active = router.asPath === `/message/${message.id}`;
+  const href = `/message/${message.id}`;
 
   const fetchMessage = async () => {
     const response = await api.get(messageUrl(message.id));
@@ -39,8 +40,8 @@ function MessageLink({ message }: MessageLinkProps) {
   };
 
   return (
-    <Link href={`/message/${message.id}`}>
-      <a
+    <Link href={href}>
+      <button
         className={`
           ${
             active
@@ -48,10 +49,17 @@ function MessageLink({ message }: MessageLinkProps) {
               : "text-white hover:bg-zinc-700/50"
           } 
           block truncate rounded px-2 py-2 text-sm`}
-        onMouseEnter={handlePreFetchData}
+        onClick={async (e) => {
+          e.preventDefault();
+
+          await handlePreFetchData();
+
+          router.push(href);
+        }}
+        type="button"
       >
         {message.title}
-      </a>
+      </button>
     </Link>
   );
 }

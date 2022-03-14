@@ -21,22 +21,24 @@ function ErrorFallback() {
 }
 
 /*
-In order to fix our URL duplication, we simply created a function called
-`messageUrl` that takes care of that. Maybe in a bigger application, we might
-have hooks such as a "useMessage" for example that takes care of this kind of
-stuff. But here we are taking a simple approach.
+Now, let's see how to prevent navigation until the data was loaded on click,
+thereby completely removing the spinners.
+Just to show the point, let's use the onClick instead of onMouseEnter in our
+Sidebar component. We will later add the onMouseEnter behavior, don't worry.
+In the onClick logic, we will prevent the default behavior of the browser
+(prevent refreshing the page) we will load the data and just then push to the
+href. With this approach we are basically pausing the app until the data is
+ready and, just like before, if this data is already in cache, the transition
+is instant.
 
-Ok, we are pre-fetching and we no longer have URL duplication, but there is still
-a problem in our app:
-If we hover a fresh message link and then quickly click on it, we still see the
-spinner. It is arguable whether or not this is a good trade off between code
-complexity and improving UX. In my personal opinion, the code as it is right now
-is just perfect. We are pre-fetching and in some occasions, there is nothing
-wrong with showing a spinner when the message is being fetched.
+If the time for the data to get ready is low, this solution gives actually a
+great UX. A lot of native iOS apps don't show loading states until something
+takes a certain amount of time. So if we get lucky here and our data loads quick,
+this is an okay approach. But, depending on the situation, there is a good change
+you wanna show some feedback to your user. If the data takes too long to be
+ready, it is gonna feel like if the app is broken.
 
-But say we really want to prevent navigation until the data was loaded on click,
-thereby completely removing the spinners. How would we do that? Let's see in the
-next commit...
+In the next commit we are going to fix that.
 */
 
 function MyApp({ Component, pageProps }: AppProps) {
