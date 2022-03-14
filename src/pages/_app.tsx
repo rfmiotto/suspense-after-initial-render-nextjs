@@ -1,4 +1,4 @@
-import { ReactElement, Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { QueryClientProvider } from "react-query";
@@ -8,8 +8,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import "../styles/globals.css";
 import "../services/mirage";
 import { queryClient } from "../services/queryClient";
+import { SuspenseAfterInitialRender } from "../components/SuspenseAfterInitialRender";
 import { Sidebar } from "../components/Sidebar";
-import Spinner from "../components/Spinner";
+import { Spinner } from "../components/Spinner";
 
 function ErrorFallback() {
   return (
@@ -20,66 +21,34 @@ function ErrorFallback() {
 }
 
 /*
-Let's refactor this code...
-Instead of "NewComponent", let's give it a better name: "Lifecycle", after all
-that is what it is about.
-We also want to have the same signature of Suspense to render our component
-depending on whether it is an initial render. So let's substitute that ternary
-operator by a "SuspenseAfterInitialRender" component. This component will
-essentially communicate that this won't suspend the first time it's rendered, but
-after that first render it will insert this Suspense boundary into our tree.
-Creating this component is actually not hard. We have already coded all the logic
-before, so all we have done here was to move it inside SuspenseAfterInitialRender.
-
 Okay, once again we see that our app is working as expected. However, we are
 still rendering this Lifecycle component and we have this isInitialRender state
 in our MyApp. So maybe we can do better than this...
+
+The first thing we are going to do is to move the state inside our SuspenseAfterInitialRender
+component instead of passing it down as a prop. We are also going to move this
+Lifecycle component inside the SuspenseAfterInitialRender.
+Now, our SuspenseAfterInitialRender have the exact same signature of Suspense and
+it provides a really simple and nice solution to our problem.
+As a final touch, let's move the SuspenseAfterInitialRender and Lifecycle
+definitions into a separate file so that we have a reusable component.
+Notice that we don't have any complicated logic inside MyApp component anymore.
+
+At the present moment (Jan 2022), Suspense from React has an unstable prop that
+basically does the same thing, but they don't know if it is going to be added.
+Since there is still no official solution to this, our approach seems to be
+very nice and simple.
 */
 
-function Lifecycle({ afterRender }: { afterRender: () => void }) {
-  useEffect(() => {
-    afterRender();
-  }, []);
-
-  return null;
-}
-
-function SuspenseAfterInitialRender({
-  fallback,
-  isInitialRender,
-  children,
-}: {
-  fallback: ReactElement;
-  isInitialRender: boolean;
-  children: ReactElement;
-}) {
-  return isInitialRender ? (
-    children
-  ) : (
-    <Suspense fallback={fallback}>{children}</Suspense>
-  );
-}
-
 function MyApp({ Component, pageProps }: AppProps) {
-  const [isInitialRender, setIsInitialRender] = useState(true);
-
   return (
     <div className="flex h-screen bg-zinc-800 text-zinc-100 antialiased">
       <Suspense fallback={<Spinner />}>
         <QueryClientProvider client={queryClient}>
           <Sidebar />
 
-          <Lifecycle
-            afterRender={() => {
-              setIsInitialRender(false);
-            }}
-          />
-
           <div className="flex w-full bg-zinc-900">
-            <SuspenseAfterInitialRender
-              fallback={<Spinner />}
-              isInitialRender={isInitialRender}
-            >
+            <SuspenseAfterInitialRender fallback={<Spinner />}>
               <Component {...pageProps} />
             </SuspenseAfterInitialRender>
           </div>

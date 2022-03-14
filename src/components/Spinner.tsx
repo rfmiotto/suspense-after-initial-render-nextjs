@@ -1,8 +1,8 @@
 import { SVGProps } from "react";
 
-export default function Spinner(props: SVGProps<SVGSVGElement>) {
+export function Spinner(props: SVGProps<SVGSVGElement>) {
   return (
-    <div className="flex items-center justify-center w-full">
+    <div className="flex w-full items-center justify-center">
       <svg
         className="text-zinc-300"
         viewBox="0 0 2400 2400"
