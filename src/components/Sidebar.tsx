@@ -59,6 +59,7 @@ function MessageLink({ message }: MessageLinkProps) {
 
           setIsPending(true);
 
+          await queryClient.cancelQueries("messages");
           await handlePreFetchData();
 
           setIsPending(false);
