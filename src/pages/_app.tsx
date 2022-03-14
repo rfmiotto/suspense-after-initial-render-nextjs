@@ -21,21 +21,22 @@ function ErrorFallback() {
 }
 
 /*
-In previous commits we saw how to suspend our application during initial render
-to fix the spinner waterfall behavior. Now, we are going to improve UX by
-removing the spinner whenever we can. We will start off by pre-fetching the
-data when the user hovers one of the messages in the sidebar.
-The most natural place to put this logic is inside MessageLink component, since
-that is the target component that is going to pre-fetch data when hovered.
+In order to fix our URL duplication, we simply created a function called
+`messageUrl` that takes care of that. Maybe in a bigger application, we might
+have hooks such as a "useMessage" for example that takes care of this kind of
+stuff. But here we are taking a simple approach.
 
-But notice something:
-In our Message component, we call the API using:
-`const response = await api.get(`messages/${query.mid}`);`
-and then in the Sidebar component we do the same thing:
-`const response = await api.get(`messages/${message.id}`);`
-So we have some duplication here and if one of the URL changes, we would have
-to modify the code in 2 different parts. In the next commit, we will fix this
-and make something very simple to share this common URL.
+Ok, we are pre-fetching and we no longer have URL duplication, but there is still
+a problem in our app:
+If we hover a fresh message link and then quickly click on it, we still see the
+spinner. It is arguable whether or not this is a good trade off between code
+complexity and improving UX. In my personal opinion, the code as it is right now
+is just perfect. We are pre-fetching and in some occasions, there is nothing
+wrong with showing a spinner when the message is being fetched.
+
+But say we really want to prevent navigation until the data was loaded on click,
+thereby completely removing the spinners. How would we do that? Let's see in the
+next commit...
 */
 
 function MyApp({ Component, pageProps }: AppProps) {

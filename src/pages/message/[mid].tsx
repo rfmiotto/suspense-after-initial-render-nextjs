@@ -3,6 +3,8 @@ import { useQuery } from "react-query";
 import { Spinner } from "../../components/Spinner";
 import api from "../../services/api";
 
+export const messageUrl = (messageId: string) => `messages/${messageId}`;
+
 type MessageResponse = {
   message: {
     title: string;
@@ -16,7 +18,7 @@ export default function Message() {
   const { data } = useQuery<MessageResponse, Error>(
     ["messages", String(query.mid)],
     async () => {
-      const response = await api.get(`messages/${query.mid}`);
+      const response = await api.get(messageUrl(query.mid as string));
       return response.data;
     },
     { suspense: true }

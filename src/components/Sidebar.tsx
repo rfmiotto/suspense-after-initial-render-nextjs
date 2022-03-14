@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { Spinner } from "./Spinner";
 import api from "../services/api";
 import { queryClient } from "../services/queryClient";
+import { messageUrl } from "../pages/message/[mid]";
 
 type MessageType = {
   id: string;
@@ -25,7 +26,7 @@ function MessageLink({ message }: MessageLinkProps) {
   const active = router.asPath === `/message/${message.id}`;
 
   const fetchMessage = async () => {
-    const response = await api.get(`messages/${message.id}`);
+    const response = await api.get(messageUrl(message.id));
     return response.data;
   };
 
