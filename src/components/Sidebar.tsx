@@ -2,8 +2,9 @@ import { useQuery } from "react-query";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-import Spinner from "./Spinner";
+import { Spinner } from "./Spinner";
 import api from "../services/api";
+import { queryClient } from "../services/queryClient";
 
 type MessageType = {
   id: string;
@@ -23,6 +24,19 @@ function MessageLink({ message }: MessageLinkProps) {
   const router = useRouter();
   const active = router.asPath === `/message/${message.id}`;
 
+  const fetchMessage = async () => {
+    const response = await api.get(`messages/${message.id}`);
+    return response.data;
+  };
+
+  const handlePreFetchData = async () => {
+    await queryClient.prefetchQuery(
+      ["messages", String(message.id)],
+      fetchMessage,
+      { staleTime: 30 * 60 * 1000 }
+    );
+  };
+
   return (
     <Link href={`/message/${message.id}`}>
       <a
@@ -33,6 +47,7 @@ function MessageLink({ message }: MessageLinkProps) {
               : "text-white hover:bg-zinc-700/50"
           } 
           block truncate rounded px-2 py-2 text-sm`}
+        onMouseEnter={handlePreFetchData}
       >
         {message.title}
       </a>

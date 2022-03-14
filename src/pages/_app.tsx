@@ -21,23 +21,21 @@ function ErrorFallback() {
 }
 
 /*
-Okay, once again we see that our app is working as expected. However, we are
-still rendering this Lifecycle component and we have this isInitialRender state
-in our MyApp. So maybe we can do better than this...
+In previous commits we saw how to suspend our application during initial render
+to fix the spinner waterfall behavior. Now, we are going to improve UX by
+removing the spinner whenever we can. We will start off by pre-fetching the
+data when the user hovers one of the messages in the sidebar.
+The most natural place to put this logic is inside MessageLink component, since
+that is the target component that is going to pre-fetch data when hovered.
 
-The first thing we are going to do is to move the state inside our SuspenseAfterInitialRender
-component instead of passing it down as a prop. We are also going to move this
-Lifecycle component inside the SuspenseAfterInitialRender.
-Now, our SuspenseAfterInitialRender have the exact same signature of Suspense and
-it provides a really simple and nice solution to our problem.
-As a final touch, let's move the SuspenseAfterInitialRender and Lifecycle
-definitions into a separate file so that we have a reusable component.
-Notice that we don't have any complicated logic inside MyApp component anymore.
-
-At the present moment (Jan 2022), Suspense from React has an unstable prop that
-basically does the same thing, but they don't know if it is going to be added.
-Since there is still no official solution to this, our approach seems to be
-very nice and simple.
+But notice something:
+In our Message component, we call the API using:
+`const response = await api.get(`messages/${query.mid}`);`
+and then in the Sidebar component we do the same thing:
+`const response = await api.get(`messages/${message.id}`);`
+So we have some duplication here and if one of the URL changes, we would have
+to modify the code in 2 different parts. In the next commit, we will fix this
+and make something very simple to share this common URL.
 */
 
 function MyApp({ Component, pageProps }: AppProps) {

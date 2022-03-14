@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useQuery } from "react-query";
-import Spinner from "../../components/Spinner";
+import { Spinner } from "../../components/Spinner";
 import api from "../../services/api";
 
 type MessageResponse = {
@@ -14,7 +14,7 @@ export default function Message() {
   const { query } = useRouter();
 
   const { data } = useQuery<MessageResponse, Error>(
-    ["messages", query.mid],
+    ["messages", String(query.mid)],
     async () => {
       const response = await api.get(`messages/${query.mid}`);
       return response.data;
