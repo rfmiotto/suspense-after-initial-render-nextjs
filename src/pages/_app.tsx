@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from "react";
+import { ReactElement, Suspense, useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { QueryClientProvider } from "react-query";
@@ -20,42 +20,48 @@ function ErrorFallback() {
 }
 
 /*
-Okay, we want the inner Suspense boundary to exist so that we keep the sidebar 
-always rendered while the messages are being loaded, but if we have a message
-selected in initial render, we only want one spinner.
-Really what we want is 2 different trees based on whether it is the initial render.
-So if we had some state here to store if it is an initial render, we would be
-all set. But do we know when this initial render has finished?
-*We can use the fact that side effects don't run within a Suspense boundary until*
-*all of the components have finished suspending.*
-To exemplify this, let's create a NewComponent and place it inside a Suspense
-Boundary. Notice that the message "MyApp rendered" will be logged in the console
-but the "NewComponent rendered" message will only be logged after all these
-components finish suspending. That only occurs because NewComponent is sitting
-inside a Suspense tree. We can use this fact to pass down a callback that says
-"hey, it's not an initial render anymore".
-This solution basically solves our problem, but there is a lot of boilerplate
-here: we have this isInitialRender state, we have this NewComponent, and also
-we are duplicating our Component (the Message) because of this two different
-trees.
 Let's refactor this code...
+Instead of "NewComponent", let's give it a better name: "Lifecycle", after all
+that is what it is about.
+We also want to have the same signature of Suspense to render our component
+depending on whether it is an initial render. So let's substitute that ternary
+operator by a "SuspenseAfterInitialRender" component. This component will
+essentially communicate that this won't suspend the first time it's rendered, but
+after that first render it will insert this Suspense boundary into our tree.
+Creating this component is actually not hard. We have already coded all the logic
+before, so all we have done here was to move it inside SuspenseAfterInitialRender.
+
+Okay, once again we see that our app is working as expected. However, we are
+still rendering this Lifecycle component and we have this isInitialRender state
+in our MyApp. So maybe we can do better than this...
 */
 
-function NewComponent({ afterRender }: { afterRender: () => void }) {
+function Lifecycle({ afterRender }: { afterRender: () => void }) {
   useEffect(() => {
-    console.log("NewComponent rendered");
     afterRender();
   }, []);
 
   return null;
 }
 
+function SuspenseAfterInitialRender({
+  fallback,
+  isInitialRender,
+  children,
+}: {
+  fallback: ReactElement;
+  isInitialRender: boolean;
+  children: ReactElement;
+}) {
+  return isInitialRender ? (
+    children
+  ) : (
+    <Suspense fallback={fallback}>{children}</Suspense>
+  );
+}
+
 function MyApp({ Component, pageProps }: AppProps) {
   const [isInitialRender, setIsInitialRender] = useState(true);
-
-  useEffect(() => {
-    console.log("MyApp rendered");
-  }, []);
 
   return (
     <div className="flex h-screen bg-zinc-800 text-zinc-100 antialiased">
@@ -63,20 +69,19 @@ function MyApp({ Component, pageProps }: AppProps) {
         <QueryClientProvider client={queryClient}>
           <Sidebar />
 
-          <NewComponent
+          <Lifecycle
             afterRender={() => {
               setIsInitialRender(false);
             }}
           />
 
           <div className="flex w-full bg-zinc-900">
-            {isInitialRender ? (
+            <SuspenseAfterInitialRender
+              fallback={<Spinner />}
+              isInitialRender={isInitialRender}
+            >
               <Component {...pageProps} />
-            ) : (
-              <Suspense fallback={<Spinner />}>
-                <Component {...pageProps} />
-              </Suspense>
-            )}
+            </SuspenseAfterInitialRender>
           </div>
 
           <ReactQueryDevtools />
