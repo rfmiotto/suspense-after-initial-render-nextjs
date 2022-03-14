@@ -1,14 +1,23 @@
 import { SVGProps } from "react";
 
-export function Spinner(props: SVGProps<SVGSVGElement>) {
+type SpinnerProps = SVGProps<SVGSVGElement> & {
+  size?: "m" | "s";
+};
+
+export function Spinner({ size = "m", ...rest }: SpinnerProps) {
+  const sizes = {
+    s: 12,
+    m: 18,
+  };
+
   return (
     <div className="flex w-full items-center justify-center">
       <svg
         className="text-zinc-300"
         viewBox="0 0 2400 2400"
-        width={18}
-        height={18}
-        {...props}
+        width={sizes[size]}
+        height={sizes[size]}
+        {...rest}
       >
         <g
           strokeWidth={200}
@@ -44,3 +53,7 @@ export function Spinner(props: SVGProps<SVGSVGElement>) {
     </div>
   );
 }
+
+Spinner.defaultProps = {
+  size: "m",
+};

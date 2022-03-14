@@ -21,24 +21,41 @@ function ErrorFallback() {
 }
 
 /*
-Now, let's see how to prevent navigation until the data was loaded on click,
-thereby completely removing the spinners.
-Just to show the point, let's use the onClick instead of onMouseEnter in our
-Sidebar component. We will later add the onMouseEnter behavior, don't worry.
-In the onClick logic, we will prevent the default behavior of the browser
-(prevent refreshing the page) we will load the data and just then push to the
-href. With this approach we are basically pausing the app until the data is
-ready and, just like before, if this data is already in cache, the transition
-is instant.
+In this commit we display a loading spinner in the Sidebar component when the
+data is not ready yet.
 
-If the time for the data to get ready is low, this solution gives actually a
-great UX. A lot of native iOS apps don't show loading states until something
-takes a certain amount of time. So if we get lucky here and our data loads quick,
-this is an okay approach. But, depending on the situation, there is a good change
-you wanna show some feedback to your user. If the data takes too long to be
-ready, it is gonna feel like if the app is broken.
+At this point, we are using a onClick in the anchor tag that is inside our Sidebar
+component. This onClick has a preventDefault behavior of the browser to avoid
+navigating once we click any of the links. We prevent that in order to wait loading
+the data, and just then we navigate to that link.
+But as soon as we start using preventDefault in our click handlers, we are treading
+into dangerous waters in terms of breaking native browser functionality. So you
+always wanna be careful about that. For example, here, if I command-click on one
+of those links, I would expect it to open in another tab, but that just doesn't
+happen. We've broken that behavior because of preventDefault.
+To fix this, we added `if (e.ctrlKey || e.metaKey) return;` so that the anchor
+tag behaves normally once we click on it.
+So that is one of the reasons why simply pre-fetching the data and allow the
+spinner to show on the screen seems to be a good trade-off.
 
-In the next commit we are going to fix that.
+As a (almost) last step to finish our application, I also put back our
+onMouseEnter to pre-fetch the data.
+
+But, our approach is actually still not handling every situation. If I were to
+refresh the page so we have a cold cache and I click on a couple links quickly,
+you'll see we have a funny behavior: we see multiple loading spinners and then
+we transition to multiple pages sequentially. That is because we are not in
+control of multiple pending transitions and these links don't actually know about
+each other. The click events aren't aware that other transitions could be pending.
+To solve this, we would need some sort of port controller where we push a stack
+of pending transitions and if there is one we cancel the last one making sure
+we only navigate to the last press click. As you can see, this gets kind of
+involved pretty quickly, and that is another reason why simply pre-fetching data
+onMouseEnter seems to be a good solution. It doesn't touch with the links, we
+don't have to call preventDefault, Next is still in control of routing for us.
+
+There is a new API coming to React 18 called useTransition which is designed to
+solve this kind of problem.
 */
 
 function MyApp({ Component, pageProps }: AppProps) {

@@ -22,10 +22,10 @@
     "no-use-before-define": "off",
     "no-nested-ternary": "off",
     "jsx-a11y/anchor-is-valid": [ "error", {
-      "components": [ "Link" ],
-      "specialLink": [ "hrefLeft", "hrefRight" ],
-      "aspects": [ "invalidHref", "preferButton" ]
-      }],
+      "components": ["Link"],
+      "specialLink": ["hrefLeft", "hrefRight"],
+      "aspects": ["invalidHref", "preferButton"]
+    }],
     "@typescript-eslint/no-use-before-define": ["error"],
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",

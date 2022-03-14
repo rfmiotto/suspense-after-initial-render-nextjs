@@ -2,6 +2,7 @@ import { useQuery } from "react-query";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+import { useState } from "react";
 import { Spinner } from "./Spinner";
 import api from "../services/api";
 import { queryClient } from "../services/queryClient";
@@ -22,6 +23,7 @@ type MessagesResponse = {
 };
 
 function MessageLink({ message }: MessageLinkProps) {
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
   const active = router.asPath === `/message/${message.id}`;
   const href = `/message/${message.id}`;
@@ -40,26 +42,39 @@ function MessageLink({ message }: MessageLinkProps) {
   };
 
   return (
-    <Link href={href}>
-      <button
+    <Link href={href} passHref>
+      <a
+        href="/"
         className={`
-          ${
-            active
-              ? " bg-blue-600 text-blue-50"
-              : "text-white hover:bg-zinc-700/50"
-          } 
-          block truncate rounded px-2 py-2 text-sm`}
+        ${
+          active
+            ? "bg-blue-600 text-blue-50"
+            : "text-white hover:bg-zinc-700/50"
+        } 
+        relative block truncate rounded px-2 py-2 pr-4 text-left text-sm`}
         onClick={async (e) => {
+          if (e.ctrlKey || e.metaKey) return;
+
           e.preventDefault();
+
+          setIsPending(true);
 
           await handlePreFetchData();
 
+          setIsPending(false);
+
           router.push(href);
         }}
-        type="button"
+        onMouseEnter={handlePreFetchData}
       >
         {message.title}
-      </button>
+
+        {isPending && (
+          <span className="absolute inset-y-0 right-0 flex pr-1">
+            <Spinner size="s" />
+          </span>
+        )}
+      </a>
     </Link>
   );
 }
